@@ -1,0 +1,102 @@
+<link rel="import" href="/bower_components/polymer/polymer.html">
+<!--
+
+Shows drop down menu (works on chrome)
+
+### Usage
+The list displayed in the drop down menu can be set as an attribute.
+
+    <drop-menu list-items='["first" ,"second"]'></drop-menu>
+
+For an overlayed drop menu:
+
+    <drop-menu overlay-menu list-items='["first" ,"second"]'></drop-menu>
+
+### Styling
+ Custom property | Description | Default
+----------------|-------------|----------
+`--item-background-color` | List item backround color | `#f1ecef`
+`--item-color` | List item color used for fonts | `#302f31`
+`--close-color` | Icon button hover color | `4775D1`
+`--content-background` | Drop menu's background color | `white`
+`--close-color` | Icon button hover color | `4775D1`
+`--icon-button` | Mixin applied the icon button | `{}`
+
+@demo demo/drop-menu-demo.html
+-->
+<dom-module id="navigation-bar">
+    <template>
+        <style>
+            :host{
+                --bar-color:var(--close-color) ;
+                --knob-color:#3f6cc7 ;
+            }
+            [navigation-container]{
+                @apply(--shadow-elevation-3dp);
+                @apply(--layout-horizontal);
+                width: 100% ;
+                cursor: pointer;
+                position: relative;
+                background-color: var(--title-background) ;
+                height: 50px ;
+            }
+            [navigation-bar]{
+                background-color:var(--bar-color) ;
+                width: 30% ;
+                height: 50px ;
+                top:0 ;
+                border-right: 5px solid var(--knob-color);
+            }
+            [separator]{
+                background-color: #d1d0d4 ;
+                position: absolute;
+                left:60% ;
+                width: 5px ;
+                height: 50px ;
+            }
+            [separator][other]{
+                left:40% ;
+            }
+            [percentage]{
+                position: absolute;
+                top:15px ;
+                font-size: 15px ;
+                color:white ;
+                font-weight:400 ;
+            }
+            [start-percentage]{
+                left: 10px ;
+                color:white;
+            }
+            [end-percentage]{
+                right:10px ;
+                color:#a7a6ab ;
+            }
+        </style>
+        <div navigation-container on-click="test" title="1:01">
+            <div navigation-bar></div>
+            <div separator></div>
+            <div separator other></div>
+            <div percentage start-percentage>0:00</div>
+            <div percentage end-percentage>3:22</div>
+        </div>
+    </template>
+
+    <script>
+        Polymer({
+            is: "navigation-bar",
+            observers: [],
+            behaviors:[],
+            listeners: {},
+            properties: {
+                position:{
+                    type:Number,
+                    value:50
+                }
+            },
+            test: function(){
+                alert("test");
+            }
+        });
+    </script>
+</dom-module>
