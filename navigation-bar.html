@@ -27,51 +27,51 @@ For an overlayed drop menu:
 <dom-module id="navigation-bar">
     <template>
         <style>
-            :host{
-                --bar-color:var(--close-color) ;
-                --knob-color:var(--close-color0) ;
+            :host {
+                --bar-color: var(--close-color,#4775D1);
+                --knob-color: var(--close-color0,#3F69BC);
             }
-            [navigation-container]{
+            [navigation-container] {
                 @apply(--shadow-elevation-3dp);
                 @apply(--layout-horizontal);
-                width: 100% ;
+                width: 100%;
                 cursor: pointer;
                 position: relative;
-                background-color: var(--background-color) ;
-                height: 50px ;
+                background-color: var(--background-color,#efebe9);
+                height: 50px;
             }
-            [navigation-bar]{
-                background-color:var(--bar-color) ;
-                width: 30% ;
-                height: 50px ;
-                top:0 ;
+            [navigation-bar] {
+                background-color: var(--bar-color);
+                width: 30%;
+                height: 50px;
+                top: 0;
                 border-right: 5px solid var(--knob-color);
             }
-            [separator]{
+            [separator] {
                 /*background-color: #d1d0d4 ;*/
-                background-color: var(--background-color0) ;
+                background-color: var(--background-color0,#D7D3D1);
                 position: absolute;
-                left:20% ;
-                width: 5px ;
-                height: 50px ;
+                left: 20%;
+                width: 5px;
+                height: 50px;
             }
-            [separator][other]{
-                left:40% ;
+            [separator][other] {
+                left: 40%;
             }
-            [percentage]{
+            [percentage] {
                 position: absolute;
-                top:15px ;
-                font-size: 15px ;
-                color:white ;
-                font-weight:400 ;
+                top: 15px;
+                font-size: 15px;
+                color: white;
+                font-weight: 400;
             }
-            [start-percentage]{
-                left: 10px ;
-                color:var(--content-background);
+            [start-percentage] {
+                left: 10px;
+                color: var(--content-background,#fafafa);
             }
-            [end-percentage]{
-                right:10px ;
-                color:#a7a6ab ;
+            [end-percentage] {
+                right: 10px;
+                color: #a7a6ab;
             }
         </style>
         <div navigation-container on-click="test" title="1:01">
@@ -82,20 +82,19 @@ For an overlayed drop menu:
             <div percentage end-percentage>3:22</div>
         </div>
     </template>
-
     <script>
         Polymer({
             is: "navigation-bar",
             observers: [],
-            behaviors:[],
+            behaviors: [],
             listeners: {},
             properties: {
-                position:{
-                    type:Number,
-                    value:50
+                position: {
+                    type: Number,
+                    value: 50
                 }
             },
-            test: function(){
+            test: function () {
                 alert("test");
             }
         });
