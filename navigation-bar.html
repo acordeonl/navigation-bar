@@ -40,9 +40,8 @@ For an overlayed drop menu:
                 background-color: var(--background-color,#efebe9);
                 height: 50px;
             }
-            [navigation-bar] {
+            [navigation-progress] {
                 background-color: var(--bar-color);
-                width: 30%;
                 height: 50px;
                 top: 0;
                 border-right: 5px solid var(--knob-color);
@@ -74,8 +73,8 @@ For an overlayed drop menu:
                 color: #a7a6ab;
             }
         </style>
-        <div navigation-container on-click="test" title="1:01">
-            <div navigation-bar></div>
+        <div navigation-container title="[[progress]]">
+            <div navigation-progress on-track='_handleTrack' style$='width:[[progress]]%'></div>
             <div separator></div>
             <div separator other></div>
             <div percentage start-percentage>0:00</div>
@@ -87,15 +86,19 @@ For an overlayed drop menu:
             is: "navigation-bar",
             observers: [],
             behaviors: [],
-            listeners: {},
+            listeners: {'click':'_setProgress'},
             properties: {
-                position: {
-                    type: Number,
-                    value: 50
+                progress:{
+                    type:Number,
+                    value:0
                 }
             },
-            test: function () {
-                alert("test");
+            _handleTrack: function(e) {
+                this.progress = e.detail.x/window.innerWidth*100 ;
+           },
+            _setProgress: function(e){
+                this.progress = e.clientX/window.innerWidth*100 ;
+                this.fire('set-nav-progress',{progress:this.progress}) ;
             }
         });
     </script>
