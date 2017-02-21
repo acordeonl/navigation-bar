@@ -64,11 +64,11 @@ For an overlayed drop menu:
                 color: white;
                 font-weight: 400;
             }
-            [start-percentage] {
+            [start-time] {
                 left: 10px;
                 color: var(--content-background,#fafafa);
             }
-            [end-percentage] {
+            [end-time] {
                 right: 10px;
                 color: #a7a6ab;
             }
@@ -77,8 +77,8 @@ For an overlayed drop menu:
             <div navigation-progress on-track='_handleTrack' style$='width:[[progress]]%'></div>
             <div separator></div>
             <div separator other></div>
-            <div percentage start-percentage>0:00</div>
-            <div percentage end-percentage>3:22</div>
+            <div percentage start-time>0:00</div>
+            <div percentage end-time>[[_computeEndTime(recordingDuration)]]</div>
         </div>
     </template>
     <script>
@@ -91,14 +91,38 @@ For an overlayed drop menu:
                 progress:{
                     type:Number,
                     value:0
+                },
+                firingProgress:{
+                    type:Boolean,
+                    value:false
+                },
+                recordingDuration:{
+                    type:Number,
+                    value:0
                 }
             },
+            _computeEndTime: function(recordingDuration){
+                var minutes = Math.floor(recordingDuration/60) ;
+                var seconds = Math.floor((recordingDuration-(minutes*60))) ;
+                return minutes+':'+seconds ;
+            },
             _handleTrack: function(e) {
-                this.progress = e.detail.x/window.innerWidth*100 ;
+                if(!this.firingProgress){
+                    this.firingProgress = true ;
+                    this.fire('set-nav-progress',{progress:e.detail.x/window.innerWidth*100}) ;
+                    this.async(function(){
+                        this.firingProgress = false ;
+                    } ,  100 )  ;
+                }
            },
             _setProgress: function(e){
-                this.progress = e.clientX/window.innerWidth*100 ;
-                this.fire('set-nav-progress',{progress:this.progress}) ;
+                if(!this.firingProgress){
+                    this.firingProgress = true ;
+                    this.fire('set-nav-progress',{progress:e.clientX/window.innerWidth*100}) ;
+                    this.async(function(){
+                        this.firingProgress = false ;
+                    } ,  100 )  ;
+                }
             }
         });
     </script>
