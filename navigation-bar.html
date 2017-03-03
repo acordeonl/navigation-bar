@@ -73,12 +73,12 @@ For an overlayed drop menu:
                 color: #a7a6ab;
             }
         </style>
-        <div navigation-container title="[[progress]]">
+        <div navigation-container title="[[title]]">
             <div navigation-progress on-track='_handleTrack' style$='width:[[progress]]%'></div>
             <div separator></div>
             <div separator other></div>
-            <div percentage start-time>0:00</div>
-            <div percentage end-time>[[_computeEndTime(recordingDuration)]]</div>
+            <div percentage start-time>[[_computeMMSS(startTime)]]</div>
+            <div percentage end-time>[[_computeMMSS(endTime)]]</div>
         </div>
     </template>
     <script>
@@ -86,8 +86,20 @@ For an overlayed drop menu:
             is: "navigation-bar",
             observers: [],
             behaviors: [],
-            listeners: {'click':'_setProgress'},
+            listeners: {'click':'_setProgress','mousemove':'_showTime'},
             properties: {
+                title:{
+                    type:Number,
+                    value:0
+                },
+                startTime:{
+                    type:Number,
+                    value:0
+                },
+                endTime:{
+                    type:Number,
+                    value:0
+                },
                 progress:{
                     type:Number,
                     value:0
@@ -95,16 +107,22 @@ For an overlayed drop menu:
                 firingProgress:{
                     type:Boolean,
                     value:false
-                },
-                recordingDuration:{
-                    type:Number,
-                    value:0
                 }
             },
-            _computeEndTime: function(recordingDuration){
-                var minutes = Math.floor(recordingDuration/60) ;
-                var seconds = Math.floor((recordingDuration-(minutes*60))) ;
-                return minutes+':'+seconds ;
+            _showTime: function(e){
+                this.title = this._computeMMSS( (e.x/window.innerWidth)*(this.endTime-this.startTime) + this.startTime ) ;
+            },
+            _computeTitleMMSS: function(progress){
+                var tmp = (progress/100)*(this.endTime-this.startTime) + this.startTime ;
+                return this._computeMMSS(tmp) ;
+            },
+            _computeMMSS: function(time){
+                var minutes = Math.floor(time/60) ;
+                var seconds = Math.floor((time-(minutes*60))) ;
+                if( seconds < 10 )
+                    return minutes+':0'+seconds ;
+                else
+                    return minutes+':'+seconds ;
             },
             _handleTrack: function(e) {
                 if(!this.firingProgress){
@@ -115,7 +133,7 @@ For an overlayed drop menu:
                     } ,  100 )  ;
                 }
            },
-            _setProgress: function(e){
+           _setProgress: function(e){
                 if(!this.firingProgress){
                     this.firingProgress = true ;
                     this.fire('set-nav-progress',{progress:e.clientX/window.innerWidth*100}) ;
