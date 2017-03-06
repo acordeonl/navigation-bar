@@ -89,7 +89,8 @@ For an overlayed drop menu:
             behaviors: [],
             listeners: {
                 'click': '_setProgress',
-                'mousemove': '_showTime'
+                'mousemove': '_showTime',
+                'wheel':'_wheelZoom'
             },
             properties: {
                 scrolling:{
@@ -119,6 +120,14 @@ For an overlayed drop menu:
                 firingProgress: {
                     type: Boolean,
                     value: false
+                }
+            },
+            _wheelZoom: function(e){
+                if (e.wheelDelta > 0) {
+                    this.fire('zoom-in',{progress:e.clientX / window.innerWidth*100}) ;
+                }
+                else {
+                    this.fire('zoom-out',{progress:e.clientX / window.innerWidth*100}) ;
                 }
             },
             clearMarkers: function () {
