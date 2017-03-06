@@ -46,7 +46,7 @@ For an overlayed drop menu:
                 top: 0;
                 border-right: 5px solid var(--knob-color);
             }
-            [separator] {
+            [marker] {
                 /*background-color: #d1d0d4 ;*/
                 background-color: var(--background-color0,#D7D3D1);
                 position: absolute;
@@ -54,7 +54,7 @@ For an overlayed drop menu:
                 width: 5px;
                 height: 50px;
             }
-            [separator][other] {
+            [marker][other] {
                 left: 40%;
             }
             [percentage] {
@@ -73,10 +73,11 @@ For an overlayed drop menu:
                 color: #a7a6ab;
             }
         </style>
-        <div navigation-container title="[[title]]">
-            <div navigation-progress on-track='_handleTrack' style$='width:[[progress]]%'></div>
-            <div separator></div>
-            <div separator other></div>
+        <div on-track='_handleTrack' navigation-container title="[[title]]">
+            <div navigation-progress  style$='width:[[progress]]%'></div>
+            <template is="dom-repeat" items="[[markers]]" as="marker">
+                <div marker style$='left:[[marker.position]]%;'></div>
+            </template>
             <div percentage start-time>[[_computeMMSS(startTime)]]</div>
             <div percentage end-time>[[_computeMMSS(endTime)]]</div>
         </div>
@@ -86,60 +87,91 @@ For an overlayed drop menu:
             is: "navigation-bar",
             observers: [],
             behaviors: [],
-            listeners: {'click':'_setProgress','mousemove':'_showTime'},
+            listeners: {
+                'click': '_setProgress',
+                'mousemove': '_showTime'
+            },
             properties: {
-                title:{
-                    type:Number,
-                    value:0
-                },
-                startTime:{
-                    type:Number,
-                    value:0
-                },
-                endTime:{
-                    type:Number,
-                    value:0
-                },
-                progress:{
-                    type:Number,
-                    value:0
-                },
-                firingProgress:{
+                scrolling:{
                     type:Boolean,
                     value:false
+                },
+                markers: {
+                    type: Array,
+                    value: []
+                },
+                title: {
+                    type: Number,
+                    value: 0
+                },
+                startTime: {
+                    type: Number,
+                    value: 0
+                },
+                endTime: {
+                    type: Number,
+                    value: 0
+                },
+                progress: {
+                    type: Number,
+                    value: 0
+                },
+                firingProgress: {
+                    type: Boolean,
+                    value: false
                 }
             },
-            _showTime: function(e){
-                this.title = this._computeMMSS( (e.x/window.innerWidth)*(this.endTime-this.startTime) + this.startTime ) ;
+            clearMarkers: function () {
+                this.markers = [];
             },
-            _computeTitleMMSS: function(progress){
-                var tmp = (progress/100)*(this.endTime-this.startTime) + this.startTime ;
-                return this._computeMMSS(tmp) ;
+            addMarker: function (id, position) {
+                this.push('markers', {
+                    id: id,
+                    position: position
+                });
             },
-            _computeMMSS: function(time){
-                var minutes = Math.floor(time/60) ;
-                var seconds = Math.floor((time-(minutes*60))) ;
-                if( seconds < 10 )
-                    return minutes+':0'+seconds ;
-                else
-                    return minutes+':'+seconds ;
-            },
-            _handleTrack: function(e) {
-                if(!this.firingProgress){
-                    this.firingProgress = true ;
-                    this.fire('set-nav-progress',{progress:e.detail.x/window.innerWidth*100}) ;
-                    this.async(function(){
-                        this.firingProgress = false ;
-                    } ,  100 )  ;
+            removeMarker: function (id) {
+                for (var i = 0; i < this.markers.length; i++) {
+                    if (this.markers[i].id === id) {
+                        this.splice('markers', i, 1);
+                        return;
+                    }
                 }
-           },
-           _setProgress: function(e){
-                if(!this.firingProgress){
-                    this.firingProgress = true ;
-                    this.fire('set-nav-progress',{progress:e.clientX/window.innerWidth*100}) ;
-                    this.async(function(){
-                        this.firingProgress = false ;
-                    } ,  100 )  ;
+            },
+            _showTime: function (e) {
+                this.title = this._computeMMSS((e.x / window.innerWidth) * (this.endTime - this.startTime) + this.startTime);
+            },
+            _computeTitleMMSS: function (progress) {
+                var tmp = (progress / 100) * (this.endTime - this.startTime) + this.startTime;
+                return this._computeMMSS(tmp);
+            },
+            _computeMMSS: function (time) {
+                var minutes = Math.floor(time / 60);
+                var seconds = Math.floor((time - (minutes * 60)));
+                if (seconds < 10)
+                    return minutes + ':0' + seconds;
+                else {
+                    return minutes + ':' + seconds;
+                }
+            },
+            _handleTrack: function (e) {
+                this.scrolling = true ;
+                if(e.detail.ddx === undefined)
+                    return ;
+                this.fire('nav-bar-scroll',{scroll:e.detail.ddx}) ;
+                this.async(function(){
+                    this.scrolling = false ;
+                } , 200 )  ;
+            },
+            _setProgress: function (e) {
+                if (!this.firingProgress && !this.scrolling ) {
+                    this.firingProgress = true;
+                    this.fire('set-nav-progress', {
+                        progress: e.clientX / window.innerWidth*100
+                    });
+                    this.async(function () {
+                        this.firingProgress = false;
+                    }, 100);
                 }
             }
         });
