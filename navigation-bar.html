@@ -1,5 +1,4 @@
 <link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../iron-resizable-behavior/iron-resizable-behavior.html">
 <!--
 
 Shows drop down menu (works on chrome)
@@ -32,27 +31,37 @@ For an overlayed drop menu:
                 --bar-color: var(--theme-color1,#4775D1);
                 --knob-color: var(--theme-color10,#3F69BC);
             }
-            canvas{
+            [navigation-container] {
+                transform: translateZ(0);
                 @apply(--shadow-elevation-3dp);
+                @apply(--layout-horizontal);
+                width: 100%;
                 cursor: pointer;
                 position: relative;
                 background-color: var(--background-color,#efebe9);
+                height: 50px;
             }
             [navigation-progress] {
+                will-change:transform ; 
+                background-color: var(--bar-color);
                 height: 50px;
                 top: 0;
-                width:100% ;
-                transform-origin: 0% 50% ;
                 border-right: 5px solid var(--knob-color);
             }
             [marker] {
+                /*background-color: #d1d0d4 ;*/
                 background-color: var(--background-color0,#D7D3D1);
                 position: absolute;
                 left: 20%;
                 width: 5px;
                 height: 50px;
+                will-change:transform ;
+            }
+            [marker][other] {
+                left: 40%;
             }
             [percentage] {
+                pointer-events: none ;
                 position: absolute;
                 top: 15px;
                 font-size: 15px;
@@ -68,41 +77,26 @@ For an overlayed drop menu:
                 color: #a7a6ab;
             }
         </style>
-        </div navigation-progress>
-            <canvas title="[[title]]" ></canvas>
-            <div percentage start-time>[[_computeMMSS(startTime)]]</div>
-            <div percentage end-time>[[_computeMMSS(endTime)]]</div>
-        </div>
-        <!-- <div on-track='_handleTrack' navigation-container >
-            <div navigation-progress ></div>
+        <div on-mousedown='_preventDrag' on-track='_handleTrack' navigation-container title="[[title]]">
+            <div navigation-progress style$='width:[[progress]]%'></div>
             <template is="dom-repeat" items="[[markers]]" as="marker">
                 <div marker style$='left:[[marker.position]]%;'></div>
             </template>
-
-        </div> -->
+            <div percentage on-mousedown='_preventDrag' start-time>[[_computeMMSS(startTime)]]</div>
+            <div percentage on-mousedown='_preventDrag' end-time>[[_computeMMSS(endTime)]]</div>
+        </div>
     </template>
     <script>
         Polymer({
             is: "navigation-bar",
             observers: [],
-            behaviors: [
-                Polymer.IronResizableBehavior
-            ],
+            behaviors: [],
             listeners: {
-                'iron-resize': '_resizeCanvas',
                 'click': '_setProgress',
-                'mousemove': '_showTime'
+                'mousemove': '_showTime',
+                'wheel':'_wheelZoom'
             },
             properties: {
-                ctx:{
-                    type:Object
-                },
-                clientX:{
-                    type:Number
-                },
-                previousRectX:{
-                    type:Object
-                },
                 scrolling:{
                     type:Boolean,
                     value:false
@@ -132,22 +126,18 @@ For an overlayed drop menu:
                     value: false
                 }
             },
-            _drawRect: function(x,y,w,h,color){
-                this.ctx.beginPath() ;
-                this.ctx.rect(x,y,w,h);
-                this.ctx.fillStyle = color ;
-                this.ctx.fill();
-                this.ctx.closePath() ;
+            _preventDrag: function(e){
+                console.log('pilla',e );
+                e.stopPropagation() ;
+                e.preventDefault() ;
+                return false ;
             },
-            update: function(){
-                this.ctx.clearRect(0, 0, window.innerWidth, 50);
-                this.ctx.clearRect(0, 0, window.innerWidth, 50);
-                var progress = Math.round(this.progress * 10) / 10 ;
-                this._drawRect(0,0,progress/100*window.innerWidth,50,'#4775D1') ;
-                this._drawRect(progress/100*window.innerWidth,0,5,50,'#0000ff') ;
-                for (var i = 0; i < this.markers.length; i++) {
-                    var x = this.markers[i].position/100*window.innerWidth  ;
-                    this._drawRect(x,0,5,50,'#cccccc') ;
+            _wheelZoom: function(e){
+                if (e.wheelDelta > 0) {
+                    this.fire('zoom-in',{progress:e.clientX / window.innerWidth*100}) ;
+                }
+                else {
+                    this.fire('zoom-out',{progress:e.clientX / window.innerWidth*100}) ;
                 }
             },
             clearMarkers: function () {
@@ -184,13 +174,16 @@ For an overlayed drop menu:
                 }
             },
             _handleTrack: function (e) {
+                e.preventDefault() ;
+                e.stopPropagation() ;
                 this.scrolling = true ;
                 if(e.detail.ddx === undefined)
-                    return ;
+                    return false;
                 this.fire('nav-bar-scroll',{scroll:e.detail.ddx}) ;
                 this.async(function(){
                     this.scrolling = false ;
                 } , 200 )  ;
+                return false ;
             },
             _setProgress: function (e) {
                 if (!this.firingProgress && !this.scrolling ) {
@@ -202,17 +195,6 @@ For an overlayed drop menu:
                         this.firingProgress = false;
                     }, 100);
                 }
-            },
-            _resizeCanvas:function() {
-                this.$$('CANVAS').width = window.innerWidth;
-                this.$$('CANVAS').height = '50';
-                this.ctx = this.$$('CANVAS').getContext('2d') ;
-            },
-            attached: function() {
-                window.addEventListener('resize', this._resizeCanvas.bind(this));
-            },
-            ready: function () {
-                this._resizeCanvas() ;
             }
         });
     </script>
