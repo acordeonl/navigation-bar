@@ -128,15 +128,26 @@ For an overlayed drop menu:
                 firingProgress: {
                     type: Boolean,
                     value: false
+                },
+                zooming:{
+                    type:Boolean,
+                    value:false
                 }
             },
             _preventDrag: function(e){
-                console.log('pilla',e );
                 e.stopPropagation() ;
                 e.preventDefault() ;
                 return false ;
             },
             _wheelZoom: function(e){
+                e.stopPropagation() ;
+                e.preventDefault() ;
+                if(this.zooming || this.scrolling || this.firingProgress)
+                    return ;
+                this.zooming = true ;
+                this.async(function(){
+                    this.zooming = false ;
+                } , 30 )  ;
                 if (e.wheelDelta > 0) {
                     this.fire('zoom-in',{progress:e.clientX / window.innerWidth*100}) ;
                 }
@@ -180,17 +191,22 @@ For an overlayed drop menu:
             _handleTrack: function (e) {
                 e.preventDefault() ;
                 e.stopPropagation() ;
+                if(this.scrolling || this.zooming || this.firingProgress)
+                    return ;
                 this.scrolling = true ;
+                this.async(function(){
+                    this.scrolling = false ;
+                } , 20 )  ;
                 if(e.detail.ddx === undefined)
                     return false;
                 this.fire('nav-bar-scroll',{scroll:e.detail.ddx}) ;
-                this.async(function(){
-                    this.scrolling = false ;
-                } , 200 )  ;
+
                 return false ;
             },
             _setProgress: function (e) {
-                if (!this.firingProgress && !this.scrolling ) {
+                e.stopPropagation() ;
+                e.preventDefault() ;
+                if (!this.firingProgress && !this.scrolling && !this.zooming ) {
                     this.firingProgress = true;
                     this.playedTime = this.startTime + this.timeEPS +  ((e.clientX / window.innerWidth*100)/100)*(this.endTime-this.startTime) ;
                     this.fire('set-nav-progress', {
