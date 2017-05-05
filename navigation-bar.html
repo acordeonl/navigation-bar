@@ -99,7 +99,7 @@ For an overlayed drop menu:
             properties: {
                 timeEPS:{
                     type:Number,
-                    value:0.0001
+                    value:0.000001
                 },
                 markers: {
                     type: Array,
@@ -124,6 +124,10 @@ For an overlayed drop menu:
                 firingProgress: {
                     type: Boolean,
                     value: false
+                },
+                scrolling:{
+                    type:Boolean,
+                    value:false
                 }
             },
             // ------------- markers ---------------------
@@ -148,8 +152,13 @@ For an overlayed drop menu:
             _handleTrack: function (e) {
                 e.preventDefault() ;
                 e.stopPropagation() ;
+
                 if(this.firingProgress)
                     return ;
+                this.scrolling = true;
+                this.async(function () {
+                    this.scrolling = false;
+                }, 100);
 
                 if(e.detail.ddx === undefined)
                     return false;
@@ -172,7 +181,7 @@ For an overlayed drop menu:
             _setProgress: function (e) {
                 e.stopPropagation() ;
                 e.preventDefault() ;
-                if(this.firingProgress)
+                if(this.firingProgress || this.scrolling)
                     return ;
                 this.firingProgress = true;
                 this.async(function () {
@@ -195,10 +204,18 @@ For an overlayed drop menu:
             _computeMMSS: function (time) {
                 var minutes = Math.floor(time / 60);
                 var seconds = Math.floor((time - (minutes * 60)));
-                if (seconds < 10)
-                    return minutes + ':0' + seconds;
+                var miliseconds = Math.floor((time - (minutes * 60)-seconds)*100);
+                if (seconds < 10) {
+                    if(miliseconds < 10 )
+                        return minutes + ':0' + seconds  + ':0' + miliseconds;
+                    else
+                        return minutes + ':0' + seconds  + ':' + miliseconds ;
+                }
                 else {
-                    return minutes + ':' + seconds;
+                    if(miliseconds < 10 )
+                        return minutes + ':' + seconds + ':0' + miliseconds;
+                    else
+                    return minutes + ':' + seconds + ':' + miliseconds;
                 }
             }
         });
